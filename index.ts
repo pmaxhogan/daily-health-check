@@ -1,23 +1,18 @@
 import {Collection} from "@discordjs/collection";
 import {Snowflake} from "discord-api-types";
 import {OAuth2Guild, Client, Intents} from "discord.js";
-import {Firestore, Timestamp} from '@google-cloud/firestore';
-import {initializeApp, credential} from "firebase-admin";
+import {Timestamp, Firestore} from '@google-cloud/firestore';
 import {readFileSync} from "fs";
-
-const serviceAccount = require("serviceAccount.json");
-
-initializeApp({
-    credential: credential.cert(serviceAccount)
-});
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_MEMBERS] });
 
-const firestore = new Firestore();
-
 interface guildDoc{
-    lastCheckedIn: Timestamp
+    lastCheckedIn: Timestamp,
+    something: number
 }
+
+const db = new Firestore({keyFilename: "serviceAccount.json"});
+
 
 client.on("ready", async() => {
     console.log("Client ready");
@@ -25,7 +20,7 @@ client.on("ready", async() => {
     console.log(`Fetched ${result.size} guilds`);
     // noinspection ES6MissingAwait
     result.forEach(async guild => {
-        const docRef = firestore.doc("guilds/" + guild.id);
+        const docRef = db.collection("guilds").doc(guild.id);
         const document = await docRef.get();
 
         let shouldRunCheckin = false;
@@ -47,9 +42,11 @@ client.on("ready", async() => {
         }
 
         if(shouldRunCheckin){
-            console.log("running checkin");
+            console.log("Running checkin");
 
             await docRef.set({lastCheckedIn: Timestamp.fromDate(new Date())} as guildDoc);
+        }else{
+            console.log("Not running checkin");
         }
     });
 });
