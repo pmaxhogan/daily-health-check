@@ -1,0 +1,26 @@
+{
+  "name": "daily-health-check",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc index.ts && node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realprogrammer5000/daily-health-check.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/realprogrammer5000/daily-health-check/issues"
+  },
+  "homepage": "https://github.com/realprogrammer5000/daily-health-check#readme",
+  "dependencies": {
+    "@discordjs/rest": "^0.3.0",
+    "@google-cloud/firestore": "^5.0.2",
+    "discord-api-types": "^0.26.1",
+    "discord.js": "^13.6.0",
+    "firebase-admin": "^10.0.2"
+  }
+}
