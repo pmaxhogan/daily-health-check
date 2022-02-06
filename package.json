@@ -21,6 +21,6 @@
     "@google-cloud/firestore": "^5.0.2",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.6.0",
-    "firebase-admin": "^10.0.2"
+    "firebase": "^9.6.6"
   }
 }
