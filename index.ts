@@ -14,6 +14,7 @@ interface guildDoc{
 const db = new Firestore({keyFilename: "serviceAccount.json"});
 
 const reactions = ["🔴", "🟠", "🟡", "🟢", "👍"];
+const checkInterval = 1000 * 60 * 30;
 
 const runHealthCheckForGuild = async (guild : OAuth2Guild) => {
     const docRef = db.collection("guilds").doc(guild.id);
@@ -62,14 +63,27 @@ const runHealthCheckForGuild = async (guild : OAuth2Guild) => {
     }
 };
 
-client.on("ready", async() => {
-    console.log("Client ready");
+const checkForAllGuilds = async () => {
     const result: Collection<Snowflake, OAuth2Guild> = await client.guilds.fetch();
     console.log(`Fetched ${result.size} guilds`);
     // noinspection ES6MissingAwait
     result.forEach(async guild => {
         runHealthCheckForGuild(guild);
     });
+};
+
+
+let interval : number | null = null;
+client.on("ready", async() => {
+    console.log("Client ready");
+
+    if(interval !== null){
+        clearInterval(interval);
+    }
+
+    checkForAllGuilds();
+
+    setInterval(checkForAllGuilds, checkInterval);
 });
 
 
