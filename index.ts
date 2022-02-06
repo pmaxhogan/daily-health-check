@@ -1,6 +1,6 @@
 import {Collection} from "@discordjs/collection";
 import {Snowflake} from "discord-api-types";
-import {OAuth2Guild, Client, Intents} from "discord.js";
+import {OAuth2Guild, Client, Intents, TextChannel, MessageOptions} from "discord.js";
 import {Timestamp, Firestore} from '@google-cloud/firestore';
 import {readFileSync} from "fs";
 
@@ -8,11 +8,12 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 
 interface guildDoc{
     lastCheckedIn: Timestamp,
-    something: number
+    channelId: Snowflake
 }
 
 const db = new Firestore({keyFilename: "serviceAccount.json"});
 
+const reactions = ["🔴", "🟠", "🟡", "🟢", "👍"];
 
 client.on("ready", async() => {
     console.log("Client ready");
@@ -23,30 +24,43 @@ client.on("ready", async() => {
         const docRef = db.collection("guilds").doc(guild.id);
         const document = await docRef.get();
 
-        let shouldRunCheckin = false;
 
         console.log(`Found doc for ${guild.id}: ${document.exists}`);
 
         if(document.exists) {
             const data = document.data() as guildDoc;
 
-            const date = data.lastCheckedIn.toDate();
+            const date = data.lastCheckedIn && data.lastCheckedIn.toDate();
 
             console.log(`Doc last checked in ${date}`);
 
-            if(date.toDateString() !== (new Date()).toDateString()){
-                shouldRunCheckin = true;
+            if(!date || date.toDateString() !== (new Date()).toDateString()){
+                console.log("Running checkin");
+                const thisGuild = client.guilds.cache.get(guild.id);
+
+                if(!thisGuild) throw new TypeError("No guild found!");
+                if(!data.channelId) throw new TypeError("No channel id found!");
+
+                const channel = await thisGuild.channels.fetch(data.channelId) as TextChannel;
+
+
+                const message:MessageOptions = {
+                    content: `@everyone Please complete your daily health checkin!\nReact with your current status`,
+                    files: ["https://cdn.discordapp.com/attachments/878399508277497926/935192353478680586/mental-health-continuum-model.png"]
+                };
+
+                const sentMessage = await channel.send(message);
+
+                for (const reaction of reactions) {
+                    await sentMessage.react(reaction);
+                }
+
+                await docRef.set({lastCheckedIn: Timestamp.fromDate(new Date())} as guildDoc, {merge: true});
+            }else{
+                console.log("Not running checkin");
             }
         }else{
-            shouldRunCheckin = true;
-        }
-
-        if(shouldRunCheckin){
-            console.log("Running checkin");
-
-            await docRef.set({lastCheckedIn: Timestamp.fromDate(new Date())} as guildDoc);
-        }else{
-            console.log("Not running checkin");
+            console.log(`Could not find document for guild ${guild.id}`);
         }
     });
 });
