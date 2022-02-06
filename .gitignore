@@ -104,3 +104,4 @@ dist
 .tern-port
 /index.js
 /token.txt
+/serviceAccount.json
