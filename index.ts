@@ -1,6 +1,6 @@
 import {Collection} from "@discordjs/collection";
 import {Routes, Snowflake} from "discord-api-types/v9";
-import {OAuth2Guild, Client, Intents, TextChannel, MessageOptions, Guild, Permissions} from "discord.js";
+import {OAuth2Guild, Client, Intents, TextChannel, MessageOptions, Guild, Permissions, MessageReaction} from "discord.js";
 import {Timestamp, Firestore} from '@google-cloud/firestore';
 import {readFileSync} from "fs";
 const { REST } = require('@discordjs/rest');
@@ -104,6 +104,38 @@ client.on("interactionCreate", async interaction => {
     }
 });
 
+client.on("messageReactionAdd", async reaction => {// FIXME
+    if(client.user && reaction.message.author && reaction.message.author.id === client.user.id){
+        await reaction.message.fetch();
+
+        // @ts-ignore
+        const iReacted = reaction.users.cache.filter(user => user.id === client.user.id).size >= 1;
+        // @ts-ignore
+        const someoneElseReacted = reaction.users.cache.filter(user => user.id !== client.user.id).size >= 1;
+
+        // @ts-ignore
+        if(!someoneElseReacted){
+            return;
+        }
+
+        console.log("Checking reaction event");
+
+        const otherReactions = reaction.message.reactions.cache.filter(thisReaction => thisReaction.emoji.identifier !== reaction.emoji.identifier);
+        const theseReactedUsers = await reaction.users.cache;
+
+        for (const otherReaction of Array.from(otherReactions.values())) {
+            const otherReactionUsers = await otherReaction.users.fetch();
+
+            for (const theseReactedUser of Array.from(theseReactedUsers.values())) {
+                const isDuplicate = otherReactionUsers.find(r => r.id === theseReactedUser.id);
+                if(theseReactedUser.id !== client.user.id && (isDuplicate || !iReacted)){
+                    console.log("Removing extra reaction for" + theseReactedUser.id);
+                    await reaction.users.remove(theseReactedUser.id);
+                }
+            }
+        }
+    }
+});
 
 // noinspection JSIgnoredPromiseFromCall
 client.login(token);
