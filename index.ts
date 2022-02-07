@@ -45,7 +45,7 @@ const runHealthCheckForGuild = async (guild : OAuth2Guild | Guild, overrideDaily
             const channel = await thisGuild.channels.fetch(data.channelId) as TextChannel;
 
             const message:MessageOptions = {
-                content: `@everyone Please complete your daily health checkin!\n\n(React with your current status)`,
+                content: `@everyone Please complete your daily health checkin!\n||\n\n||\n(React with your current status)`,
                 files: ["https://cdn.discordapp.com/attachments/878399508277497926/935192353478680586/mental-health-continuum-model.png"]
             };
 
