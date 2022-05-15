@@ -31,9 +31,10 @@ const runHealthCheckForGuild = async (guild : OAuth2Guild | Guild, overrideDaily
 
         console.log(`Doc last checked in ${date}`);
 
-        const lateEnoughInDay = (new Date()).getHours() >= 5;
+        const lateEnoughInDay = (new Date()).getHours() >= 3;
+        console.log(`Hours: ${(new Date()).getHours()}`);
 
-        const didNotCheckInToday = !date || date.toDateString() !== (new Date()).toDateString();
+        const didNotCheckInToday = !date || Math.abs(Number(date) - Number(new Date())) >= 1000 * 60 * 60 * 23;
 
         if((didNotCheckInToday && lateEnoughInDay) || overrideDailyCheck){
             console.log("Running checkin");
