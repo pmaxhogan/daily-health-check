@@ -1,6 +1,6 @@
 import {Collection} from "@discordjs/collection";
 import {Routes, Snowflake} from "discord-api-types/v9";
-import {OAuth2Guild, Client, Intents, TextChannel, MessageOptions, Guild, Permissions, MessageReaction} from "discord.js";
+import {OAuth2Guild, Client, Intents, TextChannel, MessageOptions, Guild, Permissions} from "discord.js";
 import {Timestamp, Firestore} from '@google-cloud/firestore';
 import {readFileSync} from "fs";
 const { REST } = require('@discordjs/rest');
